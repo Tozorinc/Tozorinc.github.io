@@ -38,28 +38,34 @@
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
+        // Подготовка приложения
         Telegram.WebApp.ready();
 
-        // Инициализация переменных
         let clickCount = 0;
 
-        // Загрузка данных из Telegram Cloud Storage
+        // Запрос на получение сохраненных данных
         Telegram.WebApp.onEvent('dataLoad', function(data) {
-            const savedData = JSON.parse(data);
-            clickCount = savedData.count || 0;
-            document.getElementById('count').innerText = clickCount;
+            if (data) {
+                try {
+                    const savedData = JSON.parse(data);
+                    clickCount = savedData.count || 0;
+                    document.getElementById('count').innerText = clickCount;
+                } catch (e) {
+                    console.error('Ошибка при разборе данных:', e);
+                }
+            }
         });
 
-        // Обработка кликов
+        // Обработка клика и сохранение данных
         document.getElementById('clicker').addEventListener('click', function() {
             clickCount++;
             document.getElementById('count').innerText = clickCount;
 
-            // Сохранение данных в Telegram Cloud Storage
+            // Сохранение данных
             Telegram.WebApp.sendData(JSON.stringify({ count: clickCount }));
         });
 
-        // Загрузка сохраненных данных
+        // Запрос на загрузку данных при запуске
         Telegram.WebApp.requestData();
     </script>
 </body>
