@@ -38,35 +38,38 @@
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        // Подготовка приложения
         Telegram.WebApp.ready();
 
         let clickCount = 0;
 
-        // Запрос на получение сохраненных данных
-        Telegram.WebApp.onEvent('dataLoad', function(data) {
-            if (data) {
-                try {
-                    const savedData = JSON.parse(data);
-                    clickCount = savedData.count || 0;
-                    document.getElementById('count').innerText = clickCount;
-                } catch (e) {
-                    console.error('Ошибка при разборе данных:', e);
-                }
+        // Если данные уже существуют в WebApp, загружаем их
+        if (Telegram.WebApp.initDataUnsafe.user) {
+            try {
+                const savedData = Telegram.WebApp.initDataUnsafe.user.custom_data || '{}';
+                const parsedData = JSON.parse(savedData);
+                clickCount = parsedData.count || 0;
+                document.getElementById('count').innerText = clickCount;
+            } catch (e) {
+                console.error('Ошибка при разборе данных:', e);
             }
-        });
+        }
 
-        // Обработка клика и сохранение данных
+        // Обработка кликов
         document.getElementById('clicker').addEventListener('click', function() {
             clickCount++;
             document.getElementById('count').innerText = clickCount;
 
             // Сохранение данных
-            Telegram.WebApp.sendData(JSON.stringify({ count: clickCount }));
+            const dataToSave = JSON.stringify({ count: clickCount });
+            Telegram.WebApp.sendData(dataToSave);
         });
 
-        // Запрос на загрузку данных при запуске
-        Telegram.WebApp.requestData();
+        // При закрытии WebApp, данные будут отправлены и приложение закроется
+        window.addEventListener('beforeunload', function () {
+            const dataToSave = JSON.stringify({ count: clickCount });
+            Telegram.WebApp.sendData(dataToSave);
+            Telegram.WebApp.close();
+        });
     </script>
 </body>
 </html>
