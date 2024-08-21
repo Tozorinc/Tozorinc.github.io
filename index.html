@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Clicker</title>
+    <title>Telegram WebApp Clicker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
             background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
         }
         #clicker {
-            font-size: 2em;
             padding: 20px;
+            font-size: 24px;
             background-color: #007BFF;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
         #count {
             margin-top: 20px;
-            font-size: 1.5em;
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
-    <div id="app">
+    <div>
         <button id="clicker">Click me!</button>
         <div id="count">0</div>
     </div>
@@ -42,31 +40,24 @@
 
         let clickCount = 0;
 
-        // Проверяем, есть ли сохраненные данные
-        Telegram.WebApp.onEvent('dataLoad', function(data) {
+        // Загружаем данные при запуске
+        Telegram.WebApp.onEvent('dataLoad', (data) => {
             if (data) {
-                try {
-                    const savedData = JSON.parse(data);
-                    clickCount = savedData.count || 0;
-                    document.getElementById('count').innerText = clickCount;
-                } catch (e) {
-                    console.error('Ошибка при разборе данных:', e);
-                }
+                const savedData = JSON.parse(data);
+                clickCount = savedData.count || 0;
+                document.getElementById('count').innerText = clickCount;
             }
         });
 
-        // Обработка кликов и сохранение данных
-        document.getElementById('clicker').addEventListener('click', function() {
+        document.getElementById('clicker').addEventListener('click', () => {
             clickCount++;
             document.getElementById('count').innerText = clickCount;
 
-            // Отправляем данные на сервер Telegram для сохранения
             const dataToSend = JSON.stringify({ count: clickCount });
             Telegram.WebApp.sendData(dataToSend);
-            console.log("Данные отправлены:", dataToSend);
         });
 
-        // Запрашиваем данные при загрузке
+        // Запрашиваем данные сразу после запуска
         Telegram.WebApp.requestData();
     </script>
 </body>
