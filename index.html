@@ -42,34 +42,32 @@
 
         let clickCount = 0;
 
-        // Если данные уже существуют в WebApp, загружаем их
-        if (Telegram.WebApp.initDataUnsafe.user) {
-            try {
-                const savedData = Telegram.WebApp.initDataUnsafe.user.custom_data || '{}';
-                const parsedData = JSON.parse(savedData);
-                clickCount = parsedData.count || 0;
-                document.getElementById('count').innerText = clickCount;
-            } catch (e) {
-                console.error('Ошибка при разборе данных:', e);
+        // Проверяем, есть ли сохраненные данные
+        Telegram.WebApp.onEvent('dataLoad', function(data) {
+            if (data) {
+                try {
+                    const savedData = JSON.parse(data);
+                    clickCount = savedData.count || 0;
+                    document.getElementById('count').innerText = clickCount;
+                } catch (e) {
+                    console.error('Ошибка при разборе данных:', e);
+                }
             }
-        }
+        });
 
-        // Обработка кликов
+        // Обработка кликов и сохранение данных
         document.getElementById('clicker').addEventListener('click', function() {
             clickCount++;
             document.getElementById('count').innerText = clickCount;
 
-            // Сохранение данных
-            const dataToSave = JSON.stringify({ count: clickCount });
-            Telegram.WebApp.sendData(dataToSave);
+            // Отправляем данные на сервер Telegram для сохранения
+            const dataToSend = JSON.stringify({ count: clickCount });
+            Telegram.WebApp.sendData(dataToSend);
+            console.log("Данные отправлены:", dataToSend);
         });
 
-        // При закрытии WebApp, данные будут отправлены и приложение закроется
-        window.addEventListener('beforeunload', function () {
-            const dataToSave = JSON.stringify({ count: clickCount });
-            Telegram.WebApp.sendData(dataToSave);
-            Telegram.WebApp.close();
-        });
+        // Запрашиваем данные при загрузке
+        Telegram.WebApp.requestData();
     </script>
 </body>
 </html>
